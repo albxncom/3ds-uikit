@@ -1,0 +1,27 @@
+# The kit as a package for devkitPro's pacman: makepkg (dkp-makepkg) run in this folder builds the repository's own
+# tree around it (no source to fetch) with the kit's make lib and installs it with make install into the package.
+# The fields follow the 3DS port libraries installed in the devkitPro image (tools/build/image.sh; their records in
+# /opt/devkitpro/pacman/var/lib/pacman/local/*/desc): a name with the prefix 3ds-, arch any, the group 3ds-portlibs,
+# the zlib licence spelt zlib (as 3ds-zlib's), and files under opt/devkitpro/portlibs/3ds with the licences in
+# licenses/<name>/. The libraries it links against are devkitPro's packages of those names (libctru, citro2d,
+# citro3d, 3ds-zlib); the build needs devkitARM and devkitarm-rules (the package that owns 3ds_rules, which the kit's
+# Makefile includes); make lib runs art/art.py, which needs python3 on the building machine (no pacman package).
+pkgname=3ds-uikit
+pkgver=$(< "$startdir/../VERSION")
+pkgrel=1
+pkgdesc='Interface kit for Nintendo 3DS homebrew: elements, looks, sounds (static library)'
+arch=('any')
+license=('zlib')
+groups=('3ds-portlibs')
+depends=('libctru' 'citro2d' 'citro3d' '3ds-zlib')
+makedepends=('devkitARM' 'devkitarm-rules')
+# makepkg's strip is the build machine's own (in the image /usr/bin/strip, x86 targets only), not devkitARM's
+options=(!strip)
+
+build() {
+  make -C "$startdir/.." lib
+}
+
+package() {
+  make -C "$startdir/.." install DESTDIR="$pkgdir"
+}
